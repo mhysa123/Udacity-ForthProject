@@ -47,10 +47,10 @@ C = [[1],
      [3]]
 
 #TODO 创建一个 4*4 单位矩阵
-I = [[1,2,3,4],
-     [2,3,4,5],
-     [3,3,4,5],
-     [6,7,8,9]]
+I = [[1,0,0,0],
+     [0,1,0,0],
+     [0,0,1,0],
+     [0,0,0,1]]
 
 
 # ## 1.2 返回矩阵的行数和列数
@@ -81,7 +81,6 @@ def matxRound(M, decPts=4):
     for i in range(len(M)):  
         for j in range(len(M[i])):  
              M[i][j] = round(M[i][j],decPts) 
-    pass
 
 
 # In[6]:
@@ -93,7 +92,7 @@ get_ipython().magic('run -i -e test.py LinearRegressionTestCase.test_matxRound')
 
 # ## 1.4 计算矩阵的转置
 
-# In[33]:
+# In[72]:
 
 
 # TODO 计算矩阵的转置
@@ -102,14 +101,18 @@ def transpose(M):
     row = dimen[0]
     col = dimen[1]
    # print(row,col)
+    '''
     N = [[0 for i in range(row)] for i in range(col)]
     for i in range(col):
         for j in range(row):
             N[i][j] = M[j][i]
-    return N
+     '''
+    #endtime = datetime.datetime.now()
+    #这里的zip(*iterator)通过迭代器相当于生成了一个类似转置矩阵的tuple再通过list将元组转化成列表，至于效率问题，目前考虑的是少了创建二维数组的时间
+    return [list(col) for col in zip(*M)]
 
 
-# In[34]:
+# In[65]:
 
 
 # 运行以下代码测试你的 transpose 函数
@@ -175,13 +178,17 @@ get_ipython().magic('run -i -e test.py LinearRegressionTestCase.test_matxMultipl
 #     ...    & ... & ... & ...& ...\\
 #     a_{n1}    & a_{n2} & ... & a_{nn} & b_{n} \end{bmatrix}$
 
-# In[11]:
+# In[73]:
 
 
 # TODO 构造增广矩阵，假设A，b行数相同
 def augmentMatrix(A, b):
+    
+    return [ra + rb for ra, rb in zip(A, b)]
+    '''
     rowA = shape(A)[0]
     colA = shape(A)[1]
+   # return [ra + rb for ra, rb in zip(A, b)]
     M =[([] * (colA+1)) for i in range(rowA)]
     if rowA == len(b):
         for i in range(rowA):
@@ -193,9 +200,10 @@ def augmentMatrix(A, b):
         return M
     else:
         raise ValueError
+     '''
 
 
-# In[12]:
+# In[74]:
 
 
 # 运行以下代码测试你的 augmentMatrix 函数
@@ -207,26 +215,23 @@ get_ipython().magic('run -i -e test.py LinearRegressionTestCase.test_augmentMatr
 # - 把某行乘以一个非零常数
 # - 把某行加上另一行的若干倍：
 
-# In[13]:
+# In[75]:
 
 
 # TODO r1 <---> r2
 # 直接修改参数矩阵，无返回值
 def swapRows(M, r1, r2):
-    temp = M[r1]
-    M[r1] = M[r2]
-    M[r2] = temp
-    pass
+    M[r1], M[r2] = M[r2], M[r1]
 
 
-# In[14]:
+# In[76]:
 
 
 # 运行以下代码测试你的 swapRows 函数
 get_ipython().magic('run -i -e test.py LinearRegressionTestCase.test_swapRows')
 
 
-# In[15]:
+# In[83]:
 
 
 # TODO r1 <--- r1 * scale
@@ -237,28 +242,29 @@ def scaleRow(M, r, scale):
         M[r] = [x*scale for x in M[r]]
     else:
         raise ValueError
-    pass
 
 
-# In[16]:
+# In[84]:
 
 
 # 运行以下代码测试你的 scaleRow 函数
 get_ipython().magic('run -i -e test.py LinearRegressionTestCase.test_scaleRow')
 
 
-# In[17]:
+# In[85]:
 
 
 # TODO r1 <--- r1 + r2*scale
 # 直接修改参数矩阵，无返回值
 def addScaledRow(M, r1, r2, scale):
+    M[r1] = [row1 + row2 * scale for row1, row2 in zip(M[r1], M[r2])]
+    '''
     for i in range(shape(M)[1]):
         M[r1][i] = M[r1][i] + M[r2][i]*scale
-    pass
+    '''
 
 
-# In[18]:
+# In[86]:
 
 
 # 运行以下代码测试你的 addScaledRow 函数
@@ -407,7 +413,7 @@ printInMatrixFormat(Ab,padding=3,truncating=0)
 
 # ### 2.3.3 实现 Gaussian Jordan 消元法
 
-# In[43]:
+# In[89]:
 
 
 # TODO 实现 Gaussain Jordan 方法求解 Ax = b
@@ -430,6 +436,8 @@ A = [[1, -9, -8, -8], [0, 9, 6, 0], [1, 3, -6, -4], [-1, -9, 2, 4]]
 b=[[0], [1], [2], [3]]
 #b = [[0], [1], [2], [3], [4], [5], [6], [7], [8]] # it doesn't matter
 def gj_Solve(A, b, decPts=4, epsilon=1.0e-16):
+    
+
     matrix =  [[] for i in range(shape(A)[0])]
     #判断A的行数与b的行数
     if(shape(A)[0] != shape(b)[0]):
@@ -460,14 +468,18 @@ def gj_Solve(A, b, decPts=4, epsilon=1.0e-16):
                        # print( -M[x][i])
                         addScaledRow(M, x, i, -M[x][i])
           #  print(M[i][shape(M)[0]]
+        matrix = [[row[-1]] for row in M]
+        matxRound(matrix)
+        '''
         for m in range(shape(A)[0]):
             matrix[m].append(M[m][shape(M)[0]]) 
-            
+          '''  
     return matrix
-#print(gj_Solve(A,b))
+
+#print(gj    '''_Solve(A,b))
 
 
-# In[44]:
+# In[90]:
 
 
 # 运行以下代码测试你的 gj_Solve 函数
@@ -853,6 +865,7 @@ def linearRegression(X,Y):
     '''
     这里是否有简便方法，之前写过一个，但是忘记了，请老师批注简便方法
     '''
+   # Xm = [[x, 1] for x in X]
     fina = [[1]] * len(result) 
     for i in range(len(result)):
         fina[i] = result[i][0]
